@@ -1,0 +1,17 @@
+Package: PlotRichness
+Type: Package
+Title: Species Retrieval from Open-Source Databases.
+Version: 0.1.0
+Author: person("Shaya", "Van Houdt", email = "shaya.v.h@gmail.com",
+                  role = c("aut", "cre"), comment = c(ORCID = "0000-0003-4290-3593"))
+Maintainer: Shaya van Houdt <shaya.v.h@gmail.com>
+Description: This package uses open source databases like the Global Biodiversity 
+            Information Facility (GBIF), Natura2000, and SpeciesLink to retrieve species data
+            on the plot level. Using the different functions, one can find out if there is 
+            information on species in a plot, and if so what their associated International 
+            Union for Conservation of Nature (IUCN) status is. 
+License: No license
+Encoding: UTF-8
+LazyData: true
+Imports: sp, rgbif, rgeos, rgdal, raster, wellknown, CoordinateCleaner, countrycode, dplyr, ggplot2
+RoxygenNote: 7.2.3
