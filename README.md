@@ -15,7 +15,7 @@ You can install the development version of PlotRichness like so:
 
 ``` r
 library(remotes)
-install_github("PlotRichness/PlotRichness")
+install_github("shayavh/PlotRichness")
 ```
 
 ## How to cite
