@@ -13,5 +13,5 @@ Description: This package uses open source databases like the Global Biodiversit
 License: No license
 Encoding: UTF-8
 LazyData: true
-Imports: sp, rgbif, rgeos, rgdal, raster, wellknown, CoordinateCleaner, countrycode, dplyr, ggplot2
+Imports: sf, rgbif, rgeos, rgdal, raster, wellknown, CoordinateCleaner, countrycode, dplyr, ggplot2
 RoxygenNote: 7.2.3

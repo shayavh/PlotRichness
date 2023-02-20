@@ -13,7 +13,7 @@
 #' @return Species (if present) in a plot with their IUCN and residence status
 #'
 #' @export
-#' @import sp
+#' @import sf
 #' @import rgbif
 #' @import rgeos
 #' @import rgdal
