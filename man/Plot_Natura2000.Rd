@@ -2,21 +2,21 @@
 % Please edit documentation in R/Plot_Natura2000.R
 \name{Plot_Natura2000}
 \alias{Plot_Natura2000}
-\title{Find the species from Natura2000 present in a plot}
+\title{Extract Natura2000 species occurrence data from a polygon and get IUCN Red List status}
 \usage{
 Plot_Natura2000(polygon, Natura, species, file_name)
 }
 \arguments{
-\item{polygon}{An sf object of a polygon.}
+\item{polygon}{A spatial polygon object (class "sf") representing the study area}
 
-\item{Natura}{An sf object with Natura2000 sites.}
+\item{Natura}{An sf object with Natura2000 sites}
 
-\item{species}{A csv file with the species associated to Natura2000 sites.}
+\item{species}{A csv file with the species associated to Natura2000 sites}
 
-\item{file_name}{A file name "" you want to save the final csv to.}
+\item{file_name}{A character string representing the name of the output file}
 }
 \value{
-Species (if present) in a plot with their IUCN and residence status
+A data frame (if species are present) with two columns: scientific name and IUCN Red List status
 }
 \description{
 The function takes a plot as input and searches for any species

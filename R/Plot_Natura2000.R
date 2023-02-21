@@ -1,4 +1,4 @@
-#' Find the species from Natura2000 present in a plot
+#' Extract Natura2000 species occurrence data from a polygon and get IUCN Red List status
 #'
 #' The function takes a plot as input and searches for any species
 #' from the Natura2000 sites that are either present within the plot
@@ -6,11 +6,11 @@
 #' Union for Conservation of Nature (IUCN) status of the identified
 #' species.
 #'
-#' @param polygon An sf object of a polygon.
-#' @param Natura An sf object with Natura2000 sites.
-#' @param species A csv file with the species associated to Natura2000 sites.
-#' @param file_name A file name "" you want to save the final csv to.
-#' @return Species (if present) in a plot with their IUCN and residence status
+#' @param polygon A spatial polygon object (class "sf") representing the study area
+#' @param Natura An sf object with Natura2000 sites
+#' @param species A csv file with the species associated to Natura2000 sites
+#' @param file_name A character string representing the name of the output file
+#' @return A data frame (if species are present) with two columns: scientific name and IUCN Red List status
 #'
 #' @export
 #' @importFrom sf st_crs st_distance st_intersection st_transform
@@ -19,9 +19,20 @@
 #' @importFrom dplyr %>% distinct
 
 Plot_Natura2000 <- function(polygon, Natura, species, file_name){
+  ###################################################################
+  #PREPARING DATA
+  ###################################################################
+
   # Read in the necessary libraries
-  libs <- c("raster", "sf", "rgbif", "dplyr")
-  lapply(libs, require, character.only = TRUE)
+  requireNamespace("raster", quietly = TRUE)
+  requireNamespace("sf", quietly = TRUE)
+  requireNamespace("rgbif", quietly = TRUE)
+  requireNamespace("dplyr", quietly = TRUE)
+
+  # Stop is polygon is not of type 'sf'
+  if (!inherits(polygon, "sf")) {
+    stop("Input polygon must be an 'sf' object")
+  }
 
   # Set correct Coordinate Reference System (CRS)
   polygon <- st_transform(polygon, crs = st_crs(Natura))

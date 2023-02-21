@@ -1,4 +1,4 @@
-#' Find the species from GBIF present in a plot
+#' Extract GBIF species occurrence data from a polygon and get IUCN Red List status
 #'
 #' The function takes a plot as input and searches for any species
 #' from the Global Biodiversity Information Facility (GBIF) that
@@ -7,10 +7,10 @@
 #' of Nature (IUCN) status of the identified species and indicates
 #' whether they are permanent or temporary residents, if applicable.
 #'
-#' @param polygon An sf object of a polygon.
-#' @param EPSG A 4-digit code for the projected coordinate system related to the sf object in meters.
-#' @param file_name A file name "" you want to save the final csv to.
-#' @return Species (if present) in a plot with their IUCN and residence status
+#' @param polygon A spatial polygon object (class "sf") representing the study area
+#' @param EPSG A 4-digit code for the projected coordinate system related to the sf object in meters
+#' @param file_name A character string representing the name of the output file
+#' @return A data frame (if species are present) with three columns: scientific name, IUCN Red List status, and Residence
 #'
 #' @export
 #' @importFrom sf st_as_sf st_buffer st_crs st_transform
@@ -29,16 +29,20 @@ Plot_GBIF <- function(polygon, EPSG, file_name){
   #PREPARING DATA
   ###################################################################
 
-  # Libraries
-  libs <- c("sf",
-            "rgbif",
-            "raster",
-            "wellknown",
-            "CoordinateCleaner",
-            "countrycode",
-            "dplyr",
-            "ggplot2")
-  lapply(libs, require, character.only = TRUE)
+  # Read in the necessary libraries
+  requireNamespace("sf", quietly = TRUE)
+  requireNamespace("dplyr", quietly = TRUE)
+  requireNamespace("raster", quietly = TRUE)
+  requireNamespace("rgbif", quietly = TRUE)
+  requireNamespace("wellknown", quietly = TRUE)
+  requireNamespace("CoordinateCleaner", quietly = TRUE)
+  requireNamespace("countrycode", quietly = TRUE)
+  requireNamespace("ggplot2", quietly = TRUE)
+
+  # Stop is polygon is not of type 'sf'
+  if (!inherits(polygon, "sf")) {
+    stop("Input polygon must be an 'sf' object")
+  }
 
   # Set correct CRS to buffer
   polygon <- st_as_sf(polygon)

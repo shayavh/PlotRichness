@@ -2,19 +2,19 @@
 % Please edit documentation in R/Plot_GBIF.R
 \name{Plot_GBIF}
 \alias{Plot_GBIF}
-\title{Find the species from GBIF present in a plot}
+\title{Extract GBIF species occurrence data from a polygon and get IUCN Red List status}
 \usage{
 Plot_GBIF(polygon, EPSG, file_name)
 }
 \arguments{
-\item{polygon}{An sf object of a polygon.}
+\item{polygon}{A spatial polygon object (class "sf") representing the study area}
 
-\item{EPSG}{A 4-digit code for the projected coordinate system related to the sf object in meters.}
+\item{EPSG}{A 4-digit code for the projected coordinate system related to the sf object in meters}
 
-\item{file_name}{A file name "" you want to save the final csv to.}
+\item{file_name}{A character string representing the name of the output file}
 }
 \value{
-Species (if present) in a plot with their IUCN and residence status
+A data frame (if species are present) with three columns: scientific name, IUCN Red List status, and Residence
 }
 \description{
 The function takes a plot as input and searches for any species
