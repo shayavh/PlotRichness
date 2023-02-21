@@ -1,7 +1,7 @@
 Package: PlotRichness
 Type: Package
-Title: Species Retrieval from Open-Source Databases.
-Version: 0.1.0
+Title: Automated retrieval and cleaning of species data in R
+Version: 0.1.3
 Author: person("Shaya", "Van Houdt", email = "shaya.v.h@gmail.com",
                   role = c("aut", "cre"), comment = c(ORCID = "0000-0003-4290-3593"))
 Maintainer: Shaya van Houdt <shaya.v.h@gmail.com>
@@ -10,8 +10,17 @@ Description: This package uses open source databases like the Global Biodiversit
             on the plot level. Using the different functions, one can find out if there is 
             information on species in a plot, and if so what their associated International 
             Union for Conservation of Nature (IUCN) status is. 
-License: No license
+License: GPL (>= 3) | file LICENSE
+URL: https://github.com/shayavh/Plot_Richness
 Encoding: UTF-8
 LazyData: true
-Imports: sf, rgbif, rgeos, rgdal, raster, wellknown, CoordinateCleaner, countrycode, dplyr, ggplot2
+Imports: 
+        sf, 
+        rgbif, 
+        raster, 
+        wellknown, 
+        CoordinateCleaner, 
+        countrycode, 
+        dplyr, 
+        ggplot2
 RoxygenNote: 7.2.3

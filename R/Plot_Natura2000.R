@@ -13,16 +13,14 @@
 #' @return Species (if present) in a plot with their IUCN and residence status
 #'
 #' @export
-#' @import sf
-#' @import rgbif
-#' @import rgeos
-#' @import rgdal
-#' @import raster
-#' @import dplyr
+#' @importFrom sf st_crs st_distance st_intersection st_transform
+#' @importFrom rgbif occ_data
+#' @importFrom raster %in% merge nrow print unique which.min
+#' @importFrom dplyr %>% distinct
 
 Plot_Natura2000 <- function(polygon, Natura, species, file_name){
   # Read in the necessary libraries
-  libs <- c("sp", "rgeos", "rgdal", "raster", "sf", "rgbif", "dplyr")
+  libs <- c("raster", "sf", "rgbif", "dplyr")
   lapply(libs, require, character.only = TRUE)
 
   # Set correct Coordinate Reference System (CRS)

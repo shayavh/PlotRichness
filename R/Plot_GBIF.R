@@ -13,16 +13,14 @@
 #' @return Species (if present) in a plot with their IUCN and residence status
 #'
 #' @export
-#' @import sf
-#' @import rgbif
-#' @import rgeos
-#' @import rgdal
-#' @import raster
-#' @import wellknown
-#' @import CoordinateCleaner
-#' @import countrycode
-#' @import dplyr
-#' @import ggplot2
+#' @importFrom sf st_as_sf st_buffer st_crs st_transform
+#' @importFrom rgbif occ_data
+#' @importFrom raster %in% as.data.frame nrow print subset
+#' @importFrom wellknown sf_convert
+#' @importFrom CoordinateCleaner clean_coordinates
+#' @importFrom countrycode countrycode
+#' @importFrom dplyr %>% distinct filter group_by mutate n n_distinct ungroup
+#' @importFrom ggplot2 geom_sf ggplot
 
 
 Plot_GBIF <- function(polygon, EPSG, file_name){
@@ -32,8 +30,14 @@ Plot_GBIF <- function(polygon, EPSG, file_name){
   ###################################################################
 
   # Libraries
-  libs <- c("sp", "rgbif", "rgeos", "rgdal", "raster", "wellknown",
-            "CoordinateCleaner", "countrycode", "dplyr", "ggplot2")
+  libs <- c("sf",
+            "rgbif",
+            "raster",
+            "wellknown",
+            "CoordinateCleaner",
+            "countrycode",
+            "dplyr",
+            "ggplot2")
   lapply(libs, require, character.only = TRUE)
 
   # Set correct CRS to buffer
@@ -49,9 +53,20 @@ Plot_GBIF <- function(polygon, EPSG, file_name){
   polygon <- st_transform(polygon, crs = 4326)
 
   # Define kingdoms
-  kingdoms <- c("Plantae", "Fungi", "Mollusca", "Arthropoda", "Aves", "Mammalia",
-                "Annelida", "Nematoda", "Nemertea", "Tardigrada", "Acanthocephala",
-                "Nematomorpha", "Amphibia", "Reptilia")
+  kingdoms <- c("Plantae",
+                "Fungi",
+                "Mollusca",
+                "Arthropoda",
+                "Aves",
+                "Mammalia",
+                "Annelida",
+                "Nematoda",
+                "Nemertea",
+                "Tardigrada",
+                "Acanthocephala",
+                "Nematomorpha",
+                "Amphibia",
+                "Reptilia")
 
   ###################################################################
   #RETREIVING DATA FROM GBIF
