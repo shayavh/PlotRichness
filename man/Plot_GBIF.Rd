@@ -9,18 +9,20 @@ Plot_GBIF(polygon, EPSG, file_name)
 \arguments{
 \item{polygon}{A spatial polygon object (class "sf") representing the study area}
 
-\item{EPSG}{A 4-digit code for the projected coordinate system related to the sf object in meters}
-
 \item{file_name}{A character string representing the name of the output file}
+
+\item{epsg}{A 4-digit code for the projected coordinate system related to the `polygon` object in meters}
 }
 \value{
-A data frame (if species are present) with three columns: scientific name, IUCN Red List status, and Residence
+A data frame with three columns: scientific name, IUCN Red List status, and residence
+       (either permanent or temporary). The function will return a statement if no species were found.
 }
 \description{
-The function takes a plot as input and searches for any species
-from the Global Biodiversity Information Facility (GBIF) that
-are either present within the plot or located nearby. It then
-determines the associated International Union for Conservation
-of Nature (IUCN) status of the identified species and indicates
-whether they are permanent or temporary residents, if applicable.
+The function takes a spatial polygon object (class "sf") representing the study area and
+returns a data frame with three columns: scientific name, IUCN Red List status, and
+residence (either permanent or temporary). The function downloads GBIF data for the species
+present within the study area or located nearby and determines the associated IUCN status.
+}
+\references{
+More information about GBIF can be found at https://www.gbif.org/
 }

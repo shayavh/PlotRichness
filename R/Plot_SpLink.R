@@ -16,6 +16,9 @@
 #' @importFrom raster as.data.frame nrow print unique
 #' @importFrom dplyr %>% distinct select bind_rows case_when mutate left_join coalesce
 #' @importFrom units as_units
+#'
+#' @references
+#' More information about SpeciesLink can be found at https://specieslink.net/
 
 
 Plot_SpLink <- function(polygon, occurrences, occurrences2, file_name) {

@@ -1,22 +1,25 @@
 #' Extract Natura2000 species occurrence data from a polygon and get IUCN Red List status
 #'
-#' The function takes a plot as input and searches for any species
-#' from the Natura2000 sites that are either present within the plot
-#' or located nearby. It then determines the associated International
-#' Union for Conservation of Nature (IUCN) status of the identified
-#' species.
+#' This function takes a spatial polygon object (class "sf") representing a study area and
+#' searches for any species that are either present within the polygon or located nearby
+#' Natura2000 sites. It then determines the associated IUCN Red List status of the
+#' identified species.
 #'
-#' @param polygon A spatial polygon object (class "sf") representing the study area
-#' @param Natura An sf object with Natura2000 sites
-#' @param species A csv file with the species associated to Natura2000 sites
-#' @param file_name A character string representing the name of the output file
-#' @return A data frame (if species are present) with two columns: scientific name and IUCN Red List status
+#' @param polygon A spatial polygon object (class "sf") representing the study area.
+#' @param Natura An "sf" object representing the Natura2000 sites.
+#' @param species A CSV file containing the species associated with the Natura2000 sites.
+#' @param file_name A character string representing the name of the output file.
+#' @return A data frame (if species are present) with two columns: scientific name and IUCN Red List status.
 #'
 #' @export
 #' @importFrom sf st_crs st_distance st_intersection st_transform
 #' @importFrom rgbif occ_data
 #' @importFrom raster %in% merge nrow print unique which.min
-#' @importFrom dplyr %>% distinct
+#' @importFrom dplyr filter distinct %>%
+#'
+#' @references
+#' More information about Natura2000 can be found at https://ec.europa.eu/environment/nature/natura2000/
+
 
 Plot_Natura2000 <- function(polygon, Natura, species, file_name){
   ###################################################################

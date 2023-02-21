@@ -7,21 +7,23 @@
 Plot_Natura2000(polygon, Natura, species, file_name)
 }
 \arguments{
-\item{polygon}{A spatial polygon object (class "sf") representing the study area}
+\item{polygon}{A spatial polygon object (class "sf") representing the study area.}
 
-\item{Natura}{An sf object with Natura2000 sites}
+\item{Natura}{An "sf" object representing the Natura2000 sites.}
 
-\item{species}{A csv file with the species associated to Natura2000 sites}
+\item{species}{A CSV file containing the species associated with the Natura2000 sites.}
 
-\item{file_name}{A character string representing the name of the output file}
+\item{file_name}{A character string representing the name of the output file.}
 }
 \value{
-A data frame (if species are present) with two columns: scientific name and IUCN Red List status
+A data frame (if species are present) with two columns: scientific name and IUCN Red List status.
 }
 \description{
-The function takes a plot as input and searches for any species
-from the Natura2000 sites that are either present within the plot
-or located nearby. It then determines the associated International
-Union for Conservation of Nature (IUCN) status of the identified
-species.
+This function takes a spatial polygon object (class "sf") representing a study area and
+searches for any species that are either present within the polygon or located nearby
+Natura2000 sites. It then determines the associated IUCN Red List status of the
+identified species.
+}
+\references{
+More information about Natura2000 can be found at https://ec.europa.eu/environment/nature/natura2000/
 }

@@ -23,3 +23,6 @@ This function extracts SpeciesLink species occurrence data from a polygon and re
 the IUCN Red List status for each species found. The output is a data frame
 with columns for species name and IUCN Red List status.
 }
+\references{
+More information about SpeciesLink can be found at https://specieslink.net/
+}
