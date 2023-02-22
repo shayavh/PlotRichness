@@ -58,7 +58,7 @@ Plot_SpLink <- function(polygon, occurrences, occurrences2, file_name) {
   polygon <- st_transform(polygon, crs = 31983)
 
   # Create buffer
-  buffer <- st_buffer(polygon, dist = units::as_units(5, "kilometer"), byid = TRUE)
+  buffer <- st_buffer(polygon, dist = units::as_units(5, "kilometer"), byid = TRUE, nQuadSegs = -1)
 
   # Put back to correct CRS for GBIF
   buff <- st_transform(buffer, crs = 4326)
@@ -75,8 +75,9 @@ Plot_SpLink <- function(polygon, occurrences, occurrences2, file_name) {
   occurrences2_in_buffer <- occurrences2[buff,]
 
   # Combine occurrence data into one data frame
-  all_occurrences <- as.data.frame(rbind(unlist(c(occurrences_in_polygon, occurrences_in_buffer,
-                           occurrences2_in_polygon, occurrences2_in_buffer))))
+  all_occurrences <- rbind(occurrences_in_polygon, occurrences_in_buffer,
+                           occurrences2_in_polygon, occurrences2_in_buffer)
+
   all_occurrences_sf <- st_as_sf(all_occurrences, coords = c("geometry1","geometry2"), crs = st_crs("EPSG:4326"))
 
   ###################################################################
@@ -92,28 +93,45 @@ Plot_SpLink <- function(polygon, occurrences, occurrences2, file_name) {
     short <- all_occurrences_sf %>%
       dplyr::select(kingdom, scientificName, gDists_m) %>%
       dplyr::distinct() # Keep only unique species
+    short <- subset(subset(short, short$scientificName != "")) %>%
+      dplyr::distinct(scientificName)
+
 
     ###################################################################
     #EXTRACT GBIF INFORMATION
     ###################################################################
 
     # Get gbif data
-    myspecies <- short$scientificName # create a string of species
-    gbif_data <- rgbif::occ_data(scientificName = myspecies)
+    myspecies <- unique(short$scientificName)  # create a string of species
+    gbif_data <- rgbif::occ_data(scientificName = myspecies, limit = 1)
 
-    if (is.null(gbif_data$data)) { # If the data is NULL
-      iucn <- myspecies %>%
-        lapply(function(x) {
-          if (is.null(gbif_data[[x]]$data)) { # if it can't be found in this data format
-            data.frame(scientificName = x, iucnRedListCategory = "NA") # add NA to IUCN
-          } else { # if the data is in the second format
-            iucnRedListCategory <- unique(gbif_data[[x]]$data$iucnRedListCategory) # take the iucn category for each unique species
-            iucnRedListCategory <- na.omit(iucnRedListCategory) # omit NAs
-            data.frame(scientificName = x, iucnRedListCategory = iucnRedListCategory) # create data frame
+    ###################################################################
+    #GET IUCN STATUS
+    ###################################################################
+    if (is.null(gbif_data$data)) { # if the data is not in this format
+      if (!is.null(gbif_data)){ # if data is in this format
+        df <- data.frame()
+        suppressWarnings(for (i in as.numeric(1:length(gbif_data))) {
+          if(!is.null(gbif_data[[i]]$data$iucnRedListCategory)){
+            scientificName <- gbif_data[[i]]$data$scientificName
+          }else{
+            scientificName <- "NA"
           }
-        }) %>%
-        bind_rows() # Combine data frames
-    } else {
+          if(!is.null(gbif_data[[i]]$data$iucnRedListCategory)){
+            iucnRedListCategory <- gbif_data[[i]]$data$iucnRedListCategory
+          }else{
+            iucnRedListCategory <- "NA"
+          }
+          df <- rbind(df, cbind(scientificName, iucnRedListCategory))
+        })
+        # Get the correct status with the names from rgbif
+        iucn <- df %>%
+          dplyr::distinct(scientificName, iucnRedListCategory, .keep_all = TRUE) %>%
+          na.omit()
+      }else{ # if it is still NULL
+        iucn <- data.frame(scientificName = "NA", iucnRedListCategory = "NA")
+      }
+    }else {
       # Get the correct status with the names from rgbif
       spc <- gbif_data$data %>%
         dplyr::select(scientificName, iucnRedListCategory) %>%
@@ -121,29 +139,43 @@ Plot_SpLink <- function(polygon, occurrences, occurrences2, file_name) {
         na.omit()
       iucn <- spc
     }
-  } else {
-    iucn <- data.frame()
+
+    # Create a new column in iucn with matching "scientificName" from short
+    iucn$match <- NA_character_
+
+    for (i in 1:nrow(short)) {
+      prefix <- substr(short$scientificName[i], 1, 20)
+      match_idx <- which(grepl(paste0("^", prefix), iucn$scientificName))
+      if (length(match_idx) > 0) {
+        iucn$match[match_idx] <- short$scientificName[i]
+      }
+    }
+
+    matching_names <- dplyr::select(iucn, match, scientificName)
+
+    # Join with IUCN data and coalesce Red List categories
+    species <- matching_names %>%
+      dplyr::left_join(iucn, by = c("match" = "scientificName")) %>%
+      dplyr::mutate(iucnRedListCategory = dplyr::coalesce(iucn$iucnRedListCategory, iucnRedListCategory)) %>%
+      dplyr::distinct(match, iucnRedListCategory, .keep_all = TRUE)
+
+    species <- na.omit(species[,-4])
+    ###################################################################
+    #REPORT RESULTS
+    ###################################################################
+
+    # Print and save results
+    cat("Note the below list must be observed with reference to distance of the plot. Plants, fungi and insects may not be able to disperse as easily as mammals and birds and should therefore only be taken into consideration for being present when they were found inside the plot. Mammals and birds occuring within the 5km buffer, could have a range within the plot as well. Species that could be present in the plot:\n")
+    print(as.data.frame(species))
+
+    ###################################################################
+    #SAVE RESULTS
+    ###################################################################
+    file_name <- paste0(file_name, "_SpeciesLink.csv") # add file extension
+    write.csv(species, file_name, row.names = FALSE) # save data frame as csv
+  }else{
+    cat("No species found\n")
   }
-
-  # Create new column in iucn with matching "scientificName" from short
-  matching_names <- short %>%
-    dplyr::mutate(match = dplyr::case_when(
-      grepl(paste("^", substr(iucn$scientificName, 1, 4), sep=""), scientificName) ~ scientificName,
-      TRUE ~ NA_character_
-    )) %>%
-    dplyr::select(match, scientificName)
-
-  # Join with IUCN data and coalesce Red List categories
-  species <- matching_names %>%
-    dplyr::left_join(iucn, by = c("match" = "scientificName")) %>%
-    dplyr::mutate(iucnRedListCategory = dplyr::coalesce(iucn$iucnRedListCategory, iucnRedListCategory)) %>%
-    dplyr::distinct(match, iucnRedListCategory, .keep_all = TRUE)
-
-  # Print and save results
-  cat("Note the below list must be observed with reference to distance of the plot. Plants, fungi and insects may not be able to disperse as easily as mammals and birds and should therefore only be taken into consideration for being present when they were found inside the plot. Mammals and birds occuring within the 5km buffer, could have a range within the plot as well. Species that could be present in the plot:\n")
-  print(as.data.frame(species))
-  file_name <- paste0(file_name, "_SpeciesLink.csv") # add file extension
-  write.csv(species, file_name, row.names = FALSE) # save data frame as csv
 }
 
 

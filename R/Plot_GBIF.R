@@ -41,21 +41,22 @@ Plot_GBIF <- function(polygon, EPSG, file_name){
   requireNamespace("countrycode", quietly = TRUE)
   requireNamespace("ggplot2", quietly = TRUE)
 
+  # Remove sf warning
+  options(warn = -1)
+
   # Stop is polygon is not of type 'sf'
   if (!inherits(polygon, "sf")) {
     stop("Input polygon must be an 'sf' object")
   }
 
   # Set correct CRS to buffer
-  polygon <- st_as_sf(polygon)
-  st_crs(polygon) <- 4326
   polygon <- st_transform(polygon, crs = EPSG)
 
   # Create buffer of 10 km
-  buff <- st_buffer(polygon, dist = units::as_units(10, "kilometer"), byid = TRUE)
+  buffer <- st_buffer(polygon, dist = units::as_units(10, "kilometer"), byid = TRUE, nQuadSegs = -1)
 
   # Put back to correct CRS for GBIF
-  buff <- st_transform(buff, crs = 4326)
+  buff <- st_transform(buffer, crs = 4326)
   polygon <- st_transform(polygon, crs = 4326)
 
   # Define kingdoms
@@ -84,17 +85,17 @@ Plot_GBIF <- function(polygon, EPSG, file_name){
   # Iterate over kingdoms and get species data
   for (kingdom in kingdoms) {
     if (kingdom == "Aves" || kingdom == "Mammalia") {
-      wkt_buf <- sf_convert(buff)
-      species_points <- occ_data(geometry = wkt_buf,
-                                 scientificName = kingdom,
-                                 hasCoordinate = TRUE,
-                                 year = '2000,2023',
-                                 basisOfRecord = c("HUMAN_OBSERVATION",
-                                                   "LIVING_SPECIMEN",
-                                                   "MATERIAL_CITATION",
-                                                   "MATERIAL_SAMPLE",
-                                                   "OBSERVATION",
-                                                   "PRESERVED_SPECIMEN"))
+      wkt_buf <- wellknown::sf_convert(buff)
+      species_points <- rgbif::occ_data(geometry = wkt_buf,
+                                        scientificName = kingdom,
+                                        hasCoordinate = TRUE,
+                                        year = '2000,2023',
+                                        basisOfRecord = c("HUMAN_OBSERVATION",
+                                                          "LIVING_SPECIMEN",
+                                                          "MATERIAL_CITATION",
+                                                          "MATERIAL_SAMPLE",
+                                                          "OBSERVATION",
+                                                          "PRESERVED_SPECIMEN"))
       # Extract data
       species_pointsHO <- species_points$HUMAN_OBSERVATION$data
       species_pointsLS <- species_points$LIVING_SPECIMEN$data
@@ -167,17 +168,17 @@ Plot_GBIF <- function(polygon, EPSG, file_name){
                                         "7a3679ef-5582-4aaa-81f0-8c2545cafc81"), ]
     } else {
       # Create a wkt of the polygon as these are only slow moving species
-      wkt_pol <- sf_convert(polygon)
-      species_points_slow <- occ_data(geometry = wkt_pol,
-                                      scientificName = kingdom,
-                                      hasCoordinate = TRUE,
-                                      year = '2000,2023',
-                                      basisOfRecord = c("HUMAN_OBSERVATION",
-                                                        "LIVING_SPECIMEN",
-                                                        "MATERIAL_CITATION",
-                                                        "MATERIAL_SAMPLE",
-                                                        "OBSERVATION",
-                                                        "PRESERVED_SPECIMEN"))
+      wkt_pol <- wellknown::sf_convert(polygon)
+      species_points_slow <- rgbif::occ_data(geometry = wkt_pol,
+                                             scientificName = kingdom,
+                                             hasCoordinate = TRUE,
+                                             year = '2000,2023',
+                                             basisOfRecord = c("HUMAN_OBSERVATION",
+                                                               "LIVING_SPECIMEN",
+                                                               "MATERIAL_CITATION",
+                                                               "MATERIAL_SAMPLE",
+                                                               "OBSERVATION",
+                                                               "PRESERVED_SPECIMEN"))
       # Extract data
       species_points_slowHO <- species_points_slow$HUMAN_OBSERVATION$data
       species_points_slowLS <- species_points_slow$LIVING_SPECIMEN$data
@@ -264,37 +265,37 @@ Plot_GBIF <- function(polygon, EPSG, file_name){
 
     # Remove records w. more than 50 taxon having exactly the same coordinates
     records <- records %>%
-      mutate(latLon = paste0(decimalLatitude, "_", decimalLongitude)) %>%
-      group_by(latLon) %>%
-      filter(n() <= 50) %>%
-      ungroup()
+      dplyr::mutate(latLon = paste0(decimalLatitude, "_", decimalLongitude)) %>%
+      dplyr::group_by(latLon) %>%
+      dplyr::filter(dplyr::n() <= 50) %>%
+      dplyr::ungroup()
 
     #----------------------------------------------------------------------
 
     # Use the coordinate cleaner package to clean the coordinates
     records_prep <- records %>%
-      mutate(countryCode = countrycode(countryCode,
-                                       origin = 'iso2c',
-                                       destination = 'iso3c'),
-             decimalLatitude = as.numeric(decimalLatitude),
-             decimalLongitude = as.numeric(decimalLongitude))
+      dplyr::mutate(countryCode = countrycode::countrycode(countryCode,
+                                                           origin = 'iso2c',
+                                                           destination = 'iso3c'),
+                    decimalLatitude = as.numeric(decimalLatitude),
+                    decimalLongitude = as.numeric(decimalLongitude))
 
-    cleaned_records <- clean_coordinates(x = records_prep,
-                                         lon = "decimalLongitude",
-                                         lat = "decimalLatitude",
-                                         countries = "countryCode",
-                                         species = "scientificName",
-                                         tests = c(#"centroids",
-                                           "capitals",
-                                           "country",
-                                           "equal",
-                                           "gbif",
-                                           "institutions",
-                                           "zeros",
-                                           "duplicates"),
-                                         value = "clean",
-                                         verbose = TRUE,
-                                         report = TRUE)
+    cleaned_records <- suppressWarnings(CoordinateCleaner::clean_coordinates(x = records_prep,
+                                                                             lon = "decimalLongitude",
+                                                                             lat = "decimalLatitude",
+                                                                             countries = "countryCode",
+                                                                             species = "scientificName",
+                                                                             tests = c(#"centroids",
+                                                                               "capitals",
+                                                                               "country",
+                                                                               "equal",
+                                                                               "gbif",
+                                                                               "institutions",
+                                                                               "zeros",
+                                                                               "duplicates"),
+                                                                             value = "clean",
+                                                                             verbose = TRUE,
+                                                                             report = TRUE))
 
     #Remove NAs
     cleaned_records_fin <- na.omit(cleaned_records)
@@ -303,9 +304,9 @@ Plot_GBIF <- function(polygon, EPSG, file_name){
 
     # Define the resident types - Temporary or permanent based on the number of months
     DT_res <-  cleaned_records_fin %>%
-      group_by(scientificName) %>%
-      mutate(No_month = ifelse(class == "Mammalia" || class == "Aves", n_distinct(month), 12),
-             Resident = ifelse(No_month <= 4, "Seasonal/Temporary", "Yearly/Permanent"))
+      dplyr::group_by(scientificName) %>%
+      dplyr::mutate(No_month = ifelse(class == "Mammalia" || class == "Aves", dplyr::n_distinct(month), 12),
+                    Resident = ifelse(No_month <= 4, "Seasonal/Temporary", "Yearly/Permanent"))
 
     #----------------------------------------------------------------------
 
@@ -322,16 +323,16 @@ Plot_GBIF <- function(polygon, EPSG, file_name){
     if (nrow(inpoly) == 0) {
 
       # Plot the polygon and points together
-      ggplot() +
-        geom_sf(data = buff, fill = "red", alpha = 0.5) +
-        geom_sf(data = polygon, fill = "white", alpha = 0.5) +
-        geom_sf(data = species_sf, color = "blue", size = 1)
+      ggplot2::ggplot() +
+        ggplot2::geom_sf(data = buff, fill = "red", alpha = 0.5) +
+        ggplot2::geom_sf(data = polygon, fill = "white", alpha = 0.5) +
+        ggplot2::geom_sf(data = species_sf, color = "blue", size = 1)
 
       # Keep columns of interest and only distinct species
       cr <- as.data.frame(species_sf[, c("scientificName", "iucnRedListCategory", "class", "Resident")])
 
       cr <- cr %>%
-        distinct(scientificName, iucnRedListCategory, class, Resident, .keep_all = TRUE)
+        dplyr::distinct(scientificName, iucnRedListCategory, class, Resident, .keep_all = TRUE)
 
       # Print out the results and save them in the environment
       print("No species detected inside the polygon, but there were some nearby:")
@@ -347,15 +348,15 @@ Plot_GBIF <- function(polygon, EPSG, file_name){
       ###################################################################
 
       # Plot the polygon and points together
-      ggplot() +
-        geom_sf(data = polygon, fill = "white", alpha = 0.5) +
-        geom_sf(data = inpoly, color = "blue", size = 1)
+      ggplot2::ggplot() +
+        ggplot2::geom_sf(data = polygon, fill = "white", alpha = 0.5) +
+        ggplot2::geom_sf(data = inpoly, color = "blue", size = 1)
 
       # Keep columns of interest and only distinct species
       cr <- as.data.frame(inpoly[, c("scientificName", "iucnRedListCategory", "class", "Resident")])
 
       cr <- cr %>%
-        distinct(scientificName, iucnRedListCategory, class, Resident, .keep_all = TRUE)
+        dplyr::distinct(scientificName, iucnRedListCategory, class, Resident, .keep_all = TRUE)
 
       # Print out the results and save them in the environment
       print("Species observed in the plot")

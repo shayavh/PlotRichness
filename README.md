@@ -12,13 +12,16 @@ on the plot level. It makes use of the rgbif package to get species
 information and their associated International Union for Conservation of
 Nature and Natural Resources (IUCN). In addition, it uses
 freely-available shape- and csv-files to get more specific species data
-for Europe (e.g. Natura2000) and Brazil (SpeciesLink).
+for Europe (e.g. Natura2000) and South America (SpeciesLink).
 
 The main user relevant functions are:
 
--   `Plot_GBIF` - Retrieve species data for a plot from GBIF.
--   `Plot_Natura2000` - Retrieve species data for Europe plots
-    (additional to GBIF)
+-   `Plot_GBIF` - Extract GBIF species occurrence data from a polygon
+    and get IUCN Red List status.
+-   `Plot_Natura2000` - Extract Natura2000 species occurrence data from
+    a polygon and get IUCN Red List status.
+-   `Plot_SpLink` - Extract SpeciesLink species occurrence data from a
+    polygon and get IUCN Red List status.
 
 Objects from the following spatial classes are supported:
 
@@ -43,7 +46,7 @@ Plot_GBIF(polygon, 3301, "file_name") # 3301 is the EPSG for Estonia - change ac
 Plot_Natura2000(polygon, Natura, species, "file_name")
 ```
 
-## Necessary Data for **Plot_Natura2000** function
+## Necessary data for **Plot_Natura2000** function
 
 Natura 2000 files can be found at:
 
@@ -53,10 +56,30 @@ Natura 2000 files can be found at:
 
 After download you should have:
 
--   *Natura2000_end2021_rev1_epsg3035.shp* - Which will function as the
-    **Natura** object in the **Plot_Natura2000** function.
--   *Natura2000_end2019_SPECIES.csv* - Which will function as the
-    **species** object in the **Plot_Natura2000** function.
+-   `Natura2000_end2021_rev1_epsg3035.shp` - Which will function as the
+    *Natura* object in the **Plot_Natura2000** function.
+-   `Natura2000_end2019_SPECIES.csv` - Which will function as the
+    *species* object in the **Plot_Natura2000** function.
+
+## Necessary data for **Plot_SpLink** function
+
+SpeciesLink files can be requested for download at:
+
+<https://specieslink.net/search/>
+
+Go to the *FILTERS* tab and under *basis of record* tick *human
+observation*. Also tick *accepted* under *taxonomic status*. Then go to
+the *DOWNLOAD* tab and tick *Excel* under *file format* and *Darwin Core
+fields* under *data fields*. Click confirm.
+
+You wil receive an email (check spam) with a download link.
+
+After download you should have:
+
+-   \`\` - Which will function as the *occurrences* object in the
+    **Plot_SpLink** function.
+-   \`\` - Which will function as the *occurrences2* object in the
+    **Plot_SpLink** function.
 
 ## How to cite
 
