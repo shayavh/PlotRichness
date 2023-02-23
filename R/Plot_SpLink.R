@@ -5,8 +5,7 @@
 #' with columns for species name and IUCN Red List status.
 #'
 #' @param polygon A spatial polygon object (class "sf") representing the study area.
-#' @param occurrences A data frame with SpeciesLink species occurrence data, containing columns for scientific name, longitude, and latitude
-#' @param occurrences2 A data frame with additional SpeciesLink species occurrence data, in the same format as \code{occurrences}
+#' @param occurrences A dataframe with SpeciesLink occurrence data for your region
 #' @param filename A character string representing the name of the output file
 #' @return A data frame (if species are present) with two columns: scientific name and IUCN Red List status
 #'
@@ -21,7 +20,7 @@
 #' More information about SpeciesLink can be found at https://specieslink.net/
 
 
-Plot_SpLink <- function(polygon, occurrences, occurrences2, file_name) {
+Plot_SpLink <- function(polygon, occurrences, file_name) {
   ###################################################################
   #PREPARING DATA
   ###################################################################
@@ -39,16 +38,13 @@ Plot_SpLink <- function(polygon, occurrences, occurrences2, file_name) {
     stop("Input polygon must be an 'sf' object")
   }
   # Stop if occurrences are not of type dataframe
-  if (!is.data.frame(occurrences) || !is.data.frame(occurrences2)) {
+  if (!is.data.frame(occurrences)) {
     stop("Input occurrences and occurrences2 must be data frames")
   }
 
   # Prepare occurrence data
   occurrences <- occurrences[complete.cases(occurrences[,c("longitude","latitude")]),] # remove NAs
   occurrences <- st_as_sf(occurrences, coords = c("longitude","latitude"), crs = st_crs("EPSG:4326")) # convert to sf
-
-  occurrences2 <- occurrences2[complete.cases(occurrences2[,c("longitude","latitude")]),] # remove NAs
-  occurrences2 <- st_as_sf(occurrences2, coords = c("longitude","latitude"), crs = st_crs("EPSG:4326")) # convert to sf
 
   ###################################################################
   #MAKE BUFFER
@@ -69,16 +65,22 @@ Plot_SpLink <- function(polygon, occurrences, occurrences2, file_name) {
   ###################################################################
 
   # Get occurrence data in the polygon and in the buffer
+  if ("Z" %in% colnames(st_coordinates(polygon))) {
+    polygon <- st_zm(polygon)
+  }
   occurrences_in_polygon <- occurrences[polygon,]
   occurrences_in_buffer <- occurrences[buff,]
-  occurrences2_in_polygon <- occurrences2[polygon,]
-  occurrences2_in_buffer <- occurrences2[buff,]
 
-  # Combine occurrence data into one data frame
-  all_occurrences <- rbind(occurrences_in_polygon, occurrences_in_buffer,
-                           occurrences2_in_polygon, occurrences2_in_buffer)
-
-  all_occurrences_sf <- st_as_sf(all_occurrences, coords = c("geometry1","geometry2"), crs = st_crs("EPSG:4326"))
+  # Check if data frames are empty
+  if (nrow(occurrences_in_polygon) > 0 | nrow(occurrences_in_buffer) > 0) {
+    # Combine non-empty data frames using rbind()
+    non_empty_dfs <- Filter(function(x) nrow(x) > 0, list(occurrences_in_polygon, occurrences_in_buffer))
+    all_occurrences <- do.call(rbind, non_empty_dfs)
+    all_occurrences_sf <- st_as_sf(all_occurrences, coords = c("geometry1","geometry2"), crs = st_crs("EPSG:4326"))
+  } else {
+    # Use empty data frame if all data frames are empty
+    all_occurrences_sf <- data.frame()
+  }
 
   ###################################################################
   #EXTRACT DISTANCE INFORMATION

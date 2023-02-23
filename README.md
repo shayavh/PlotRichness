@@ -67,19 +67,20 @@ SpeciesLink files can be requested for download at:
 
 <https://specieslink.net/search/>
 
-Go to the *FILTERS* tab and under *basis of record* tick *human
-observation*. Also tick *accepted* under *taxonomic status*. Then go to
-the *DOWNLOAD* tab and tick *Excel* under *file format* and *Darwin Core
-fields* under *data fields*. Click confirm.
+Go to the *FILTERS* tab and under *taxonomic status* tick *accepted*.
+Also, under *geographic coordinates* tick *consistent* and under *south
+american countries* tick your country of interest and also specify your
+region of interest (you may have to download in multiple batches and
+combine the excel files in R). Then go to the *DOWNLOAD* tab and tick
+*Excel* under *file format* and *Darwin Core fields* under *data
+fields*. Click confirm.
 
-You wil receive an email (check spam) with a download link.
+You will receive an email (check spam) with a download link.
 
 After download you should have:
 
--   \`\` - Which will function as the *occurrences* object in the
-    **Plot_SpLink** function.
--   \`\` - Which will function as the *occurrences2* object in the
-    **Plot_SpLink** function.
+-   `speciesLink_file.xlxs` - Which will function as the *occurrences*
+    object in the **Plot_SpLink** function.
 
 ## How to cite
 

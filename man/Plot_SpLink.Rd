@@ -4,14 +4,12 @@
 \alias{Plot_SpLink}
 \title{Extract SpeciesLink species occurrence data from a polygon and get IUCN Red List status}
 \usage{
-Plot_SpLink(polygon, occurrences, occurrences2, file_name)
+Plot_SpLink(polygon, occurrences, file_name)
 }
 \arguments{
 \item{polygon}{A spatial polygon object (class "sf") representing the study area.}
 
-\item{occurrences}{A data frame with SpeciesLink species occurrence data, containing columns for scientific name, longitude, and latitude}
-
-\item{occurrences2}{A data frame with additional SpeciesLink species occurrence data, in the same format as \code{occurrences}}
+\item{occurrences}{A dataframe with SpeciesLink occurrence data for your region}
 
 \item{filename}{A character string representing the name of the output file}
 }
