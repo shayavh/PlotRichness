@@ -44,6 +44,7 @@ The most basic calls are:
 ``` r
 Plot_GBIF(polygon, 3301, "file_name") # 3301 is the EPSG for Estonia - change according to shapefile location
 Plot_Natura2000(polygon, Natura, species, "file_name")
+Plot_SpLink(polygon, occurrences, "file_name")
 ```
 
 ## Necessary data for **Plot_Natura2000** function
