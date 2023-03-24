@@ -354,11 +354,14 @@ Plot_GBIF <- function(polygon, EPSG, file_name){
         ggplot2::geom_sf(data = polygon, fill = "white", alpha = 0.5) +
         ggplot2::geom_sf(data = species_sf, color = "blue", size = 1)
 
+      # Add distances
+      species_sf$gDists <- st_distance(species_sf, polygon)
+
       # Keep columns of interest and only distinct species
-      cr <- as.data.frame(species_sf[, c("scientificName", "iucnRedListCategory", "class", "Resident")])
+      cr <- as.data.frame(species_sf[, c("scientificName", "iucnRedListCategory", "class", "Resident", "gDists")])
 
       cr <- cr %>%
-        dplyr::distinct(scientificName, iucnRedListCategory, class, Resident, .keep_all = TRUE)
+        dplyr::distinct(scientificName, iucnRedListCategory, class, Resident, gDists, .keep_all = TRUE)
 
       # Print out the results and save them in the environment
       print("No species detected inside the polygon, but there were some nearby:")
