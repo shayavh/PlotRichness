@@ -360,9 +360,7 @@ Plot_GBIF <- function(polygon, EPSG, file_name){
       # Keep columns of interest and only distinct species
       cr <- as.data.frame(species_sf[, c("scientificName", "iucnRedListCategory", "class", "Resident", "gDists")])
 
-      cr <- cr %>%
-        dplyr::distinct(scientificName, iucnRedListCategory, class, Resident, gDists, .keep_all = TRUE)
-
+      cr <- cr[!duplicated(cr$scientificName),]
       # Print out the results and save them in the environment
       print("No species detected inside the polygon, but there were some nearby:")
       print(cr)
