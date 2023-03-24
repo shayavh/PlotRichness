@@ -159,7 +159,7 @@ Plot_SpLink <- function(polygon, occurrences, file_name) {
       dplyr::distinct(match, iucnRedListCategory, gDists.x, .keep_all = TRUE) %>%
       dplyr::select(match, scientificName, iucnRedListCategory, gDists.x)
 
-    species <- na.omit(species[,-4])
+    species <- na.omit(species)
     ###################################################################
     #REPORT RESULTS
     ###################################################################
