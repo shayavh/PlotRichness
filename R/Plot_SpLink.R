@@ -54,7 +54,7 @@ Plot_SpLink <- function(polygon, occurrences, file_name) {
   polygon <- st_transform(polygon, crs = 31983)
 
   # Create buffer
-  buffer <- st_buffer(polygon, dist = units::as_units(5, "kilometer"), byid = TRUE, nQuadSegs = -1)
+  buffer <- st_buffer(polygon, dist = units::as_units(10, "kilometer"), byid = TRUE, nQuadSegs = -1)
 
   # Put back to correct CRS for GBIF
   buff <- st_transform(buffer, crs = 4326)
