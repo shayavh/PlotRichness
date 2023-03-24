@@ -94,10 +94,8 @@ Plot_SpLink <- function(polygon, occurrences, file_name) {
     # Create a shorter dataframe with necessary columns
     short <- all_occurrences_sf %>%
       dplyr::select(kingdom, scientificName, gDists_m) %>%
-      dplyr::distinct() # Keep only unique species
-    short <- subset(subset(short, short$scientificName != "")) %>%
-      dplyr::distinct(scientificName)
-
+      dplyr::distinct(kingdom, scientificName, gDists_m) # Keep only unique species
+    short <- subset(short, short$scientificName != "")
 
     ###################################################################
     #EXTRACT GBIF INFORMATION
@@ -144,22 +142,22 @@ Plot_SpLink <- function(polygon, occurrences, file_name) {
 
     # Create a new column in iucn with matching "scientificName" from short
     iucn$match <- NA_character_
-
+    iucn$gDists <- NA_character_
     for (i in 1:nrow(short)) {
       prefix <- substr(short$scientificName[i], 1, 20)
       match_idx <- which(grepl(paste0("^", prefix), iucn$scientificName))
       if (length(match_idx) > 0) {
         iucn$match[match_idx] <- short$scientificName[i]
+        iucn$gDists[match_idx] <- short$gDists_m[i]
       }
     }
 
-    matching_names <- dplyr::select(iucn, match, scientificName)
-
     # Join with IUCN data and coalesce Red List categories
-    species <- matching_names %>%
+    species <- iucn %>%
       dplyr::left_join(iucn, by = c("match" = "scientificName")) %>%
       dplyr::mutate(iucnRedListCategory = dplyr::coalesce(iucn$iucnRedListCategory, iucnRedListCategory)) %>%
-      dplyr::distinct(match, iucnRedListCategory, .keep_all = TRUE)
+      dplyr::distinct(match, iucnRedListCategory, gDists.x, .keep_all = TRUE) %>%
+      dplyr::select(match, scientificName, iucnRedListCategory, gDists.x)
 
     species <- na.omit(species[,-4])
     ###################################################################
@@ -167,7 +165,7 @@ Plot_SpLink <- function(polygon, occurrences, file_name) {
     ###################################################################
 
     # Print and save results
-    cat("Note the below list must be observed with reference to distance of the plot. Plants, fungi and insects may not be able to disperse as easily as mammals and birds and should therefore only be taken into consideration for being present when they were found inside the plot. Mammals and birds occuring within the 5km buffer, could have a range within the plot as well. Species that could be present in the plot:\n")
+    cat("Note the below list must be observed with reference to distance of the plot. Plants, fungi and insects may not be able to disperse as easily as mammals and birds and should therefore only be taken into consideration for being present when they were found inside the plot. Mammals and birds occuring within the 10km buffer, could have a range within the plot as well. Species that could be present in the plot:\n")
     print(as.data.frame(species))
 
     ###################################################################
