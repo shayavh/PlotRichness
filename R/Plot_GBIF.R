@@ -60,20 +60,35 @@ Plot_GBIF <- function(polygon, EPSG, file_name){
   polygon <- st_transform(polygon, crs = 4326)
 
   # Define kingdoms
-  kingdoms <- c("Plantae",
-                "Fungi",
-                "Mollusca",
-                "Arthropoda",
-                "Aves",
-                "Mammalia",
-                "Annelida",
-                "Nematoda",
-                "Nemertea",
-                "Tardigrada",
-                "Acanthocephala",
-                "Nematomorpha",
-                "Amphibia",
-                "Reptilia")
+  classes <- c(359,
+               212,
+               11592253,
+               6,
+               5,
+               52,
+               42,
+               5967481,
+               63,
+               14,
+               67,
+               64,
+               7188530)
+
+  # Mammalia = 359
+  # Aves = 212
+  # Squamata = 11592253 - Reptiles
+  # Plantae = 6
+  # Arthropoda = 54
+  # Fungi = 5
+  # Mollusca = 52
+  # Annelida = 42
+  # Nematoda = 5967481
+  # Nemertea = 63
+  # Tardigrada = 14
+  # Acanthocephala = 67
+  # Nematomorpha = 64
+  # Amphibia = 7188530
+
 
   ###################################################################
   #RETREIVING DATA FROM GBIF
@@ -83,11 +98,11 @@ Plot_GBIF <- function(polygon, EPSG, file_name){
   records <- data.frame()
 
   # Iterate over kingdoms and get species data
-  for (kingdom in kingdoms) {
-    if (kingdom == "Aves" || kingdom == "Mammalia") {
+  for (class in classes) {
+    if (class == 212 || class == 359) {
       wkt_buf <- wellknown::sf_convert(buff)
       species_points <- rgbif::occ_data(geometry = wkt_buf,
-                                        scientificName = kingdom,
+                                        classKey = class,
                                         hasCoordinate = TRUE,
                                         year = '2000,2023',
                                         basisOfRecord = c("HUMAN_OBSERVATION",
@@ -96,6 +111,8 @@ Plot_GBIF <- function(polygon, EPSG, file_name){
                                                           "MATERIAL_SAMPLE",
                                                           "OBSERVATION",
                                                           "PRESERVED_SPECIMEN"))
+
+
       # Extract data
       species_pointsHO <- species_points$HUMAN_OBSERVATION$data
       species_pointsLS <- species_points$LIVING_SPECIMEN$data
@@ -139,21 +156,12 @@ Plot_GBIF <- function(polygon, EPSG, file_name){
                         year = 1 )
 
       #List the dataframes that have data
-      list <- list()
-      for (df in list(species_pointsHO,
-                      species_pointsLS,
-                      species_pointsMC,
-                      species_pointsMS,
-                      species_pointsOB,
-                      species_pointsPS)) {
-        if (!is.null(df)) {
-          list_of_dfs <- list(list, df)
-        }else{
-          list_of_dfs <- list(list)
-        }
-      }
-      # Remove first list
-      species_points_list <- list_of_dfs[-1]
+      species_points_list <-list(species_pointsHO,
+                                 species_pointsLS,
+                                 species_pointsMC,
+                                 species_pointsMS,
+                                 species_pointsOB,
+                                 species_pointsPS)
 
       #Extract data to create a new dataframe called tmp
       for(species_points in species_points_list) {
@@ -163,22 +171,48 @@ Plot_GBIF <- function(polygon, EPSG, file_name){
           tmp <- tmp
         }
       }
+      tmp <- tmp[-1,]
       # Remove data from Pl@ntnet
       tmp <- tmp[!tmp$datasetKey %in% c("14d5676a-2c54-4f94-9023-1e8dcd822aa0",
                                         "7a3679ef-5582-4aaa-81f0-8c2545cafc81"), ]
     } else {
       # Create a wkt of the polygon as these are only slow moving species
       wkt_pol <- wellknown::sf_convert(polygon)
-      species_points_slow <- rgbif::occ_data(geometry = wkt_pol,
-                                             scientificName = kingdom,
-                                             hasCoordinate = TRUE,
-                                             year = '2000,2023',
-                                             basisOfRecord = c("HUMAN_OBSERVATION",
-                                                               "LIVING_SPECIMEN",
-                                                               "MATERIAL_CITATION",
-                                                               "MATERIAL_SAMPLE",
-                                                               "OBSERVATION",
-                                                               "PRESERVED_SPECIMEN"))
+      if(class == 6 || class == 5){
+        species_points_slow <- rgbif::occ_data(geometry = wkt_pol,
+                                               kingdomKey = class,
+                                               hasCoordinate = TRUE,
+                                               year = '2000,2023',
+                                               basisOfRecord = c("HUMAN_OBSERVATION",
+                                                                 "LIVING_SPECIMEN",
+                                                                 "MATERIAL_CITATION",
+                                                                 "MATERIAL_SAMPLE",
+                                                                 "OBSERVATION",
+                                                                 "PRESERVED_SPECIMEN"))
+      }
+      if(class == 54 || class == 52 || class == 42 || class == 5967481 || class == 63 ||class == 14 || class == 67 || class == 64){
+        species_points_slow <- rgbif::occ_data(geometry = wkt_pol,
+                                               phylumKey = class,
+                                               hasCoordinate = TRUE,
+                                               year = '2000,2023',
+                                               basisOfRecord = c("HUMAN_OBSERVATION",
+                                                                 "LIVING_SPECIMEN",
+                                                                 "MATERIAL_CITATION",
+                                                                 "MATERIAL_SAMPLE",
+                                                                 "OBSERVATION",
+                                                                 "PRESERVED_SPECIMEN"))
+      }else{
+        species_points_slow <- rgbif::occ_data(geometry = wkt_pol,
+                                               classKey = class,
+                                               hasCoordinate = TRUE,
+                                               year = '2000,2023',
+                                               basisOfRecord = c("HUMAN_OBSERVATION",
+                                                                 "LIVING_SPECIMEN",
+                                                                 "MATERIAL_CITATION",
+                                                                 "MATERIAL_SAMPLE",
+                                                                 "OBSERVATION",
+                                                                 "PRESERVED_SPECIMEN"))
+      }
       # Extract data
       species_points_slowHO <- species_points_slow$HUMAN_OBSERVATION$data
       species_points_slowLS <- species_points_slow$LIVING_SPECIMEN$data
@@ -222,21 +256,12 @@ Plot_GBIF <- function(polygon, EPSG, file_name){
                              year = 1 )
 
       #List the dataframes that have data
-      list_slow <- list()
-      for (df_slow in list(species_points_slowHO,
-                           species_points_slowLS,
-                           species_points_slowMC,
-                           species_points_slowMS,
-                           species_points_slowOB,
-                           species_points_slowPS)) {
-        if (!is.null(df_slow)) {
-          list_of_dfs_slow <- list(list_slow, df_slow)
-        }else{
-          list_of_dfs_slow <- list(list_slow)
-        }
-      }
-      # Remove first list
-      species_points_list_slow <- list_of_dfs_slow[-1]
+      species_points_list_slow <- list(species_points_slowHO,
+                                       species_points_slowLS,
+                                       species_points_slowMC,
+                                       species_points_slowMS,
+                                       species_points_slowOB,
+                                       species_points_slowPS)
 
       # Extract data to create a new dataframe called tmp_slow
       for(species_points_slow in species_points_list_slow) {
@@ -246,6 +271,7 @@ Plot_GBIF <- function(polygon, EPSG, file_name){
           tmp_slow <- tmp_slow
         }
       }
+      tmp_slow <- tmp_slow[-1,]
       # Remove data from Pl@ntnet
       tmp <- tmp_slow[!tmp_slow$datasetKey %in% c("14d5676a-2c54-4f94-9023-1e8dcd822aa0",
                                                   "7a3679ef-5582-4aaa-81f0-8c2545cafc81"), ]
